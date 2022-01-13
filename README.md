@@ -29,7 +29,7 @@ az ad sp create-for-rbac --name telegrafdemo
 An MQTT broker is the source of events ingested by Telegraf. 
 You can re-use an existing Mosquitto broker that offers anonymous access or set one up on AKS.
 
-## Setup a Mosquitto Broker using Helm
+### Setup a Mosquitto Broker using Helm
 Further details can be found [here](https://artifacthub.io/packages/helm/k8s-at-home/mosquitto) 
 ```
 .\helm repo add k8s-at-home https://k8s-at-home.com/charts/
@@ -55,7 +55,7 @@ kubectl port-forward <podname> 1883:1883
 ## Deploy Telegraf
 A helm package is used to deploy a Telgraf instance to the AKS cluster. The default configuration file is tailored by supplying a custom yaml file to helm as well as mounting the necessary files needed to process messages using Protocol Buffers.
 
-# Configure ADX Credentials
+### Configure ADX Credentials
 - Copy the ```telegraf_secrets.yaml.template``` file to a file named ```telegraf_secrets.yaml```
 - Update the yaml file with values for the service principal created earlier. The mapping of json fields to yaml is:
 
@@ -68,14 +68,14 @@ A helm package is used to deploy a Telgraf instance to the AKS cluster. The defa
 ```
 kubectl apply -f .\telegraf_secrets.yaml
 ```
-# Configure Protocol Buffer Message Specification
+### Configure Protocol Buffer Message Specification
 The Telegraf MQTT consumer plugin requires a message specification to parse messages to be stored in ADX. A configmap is used to mount the ```.proto``` file into the Telegraf pod
 - To create the configmap run the following command from the root of the repo. A new configmap named telegraf-proto will be created
 ```
 kubectl create configmap telegraf-proto --from-file=.\protobuf\MqttProtobufConsole\devicemessage.proto
 ```
 
-# Deploy Telegraf
+### Deploy Telegraf Helm Package
 The previous steps created the prequisite Kubernetes resources that are used to customise the default Telegraf instance deployed by the Helm package.
 - Customise the configuration yaml file ```values_protobuf.yaml``` by updating the Azure Data Explorer endpoint_url (line 48) with the URI for your Azure Data Explorer cluster (can be found via the portal). The uri will be something like, ```https://<adx cluster name>.<region>.kusto.windows.net```
 - From the root of the repo deploy the Telegraf Helm package. Further details can be found [here](https://github.com/influxdata/helm-charts) 
@@ -89,7 +89,8 @@ helm upgrade --install my-telegraf -f values_protobuf.yaml influxdata/telegraf
 !["MQTT Explorer Sample Message"](assets/samplemessage.png)
 - The ```mqtt_consumer``` table has now been created in ADX. All protocol buffer messages sent to the ```proto_test``` topic will be parsed by Telegraf and persisted to this table
 - The ```mqtt_consumer``` table will likely have no rows at this time. This is due to the default batching policy. To reduce the time before messages are available for querying in the ```mqtt_consumer``` table the following batching policy can be applied. After running this query new messages will be present in the ```mqtt_consumer``` table after roughly 10 seconds of being published
- ```
+ 
+```
 .alter table mqtt_consumer policy ingestionbatching @'{"MaximumBatchingTimeSpan":"00:00:10", "MaximumNumberOfItems": 100, "MaximumRawDataSizeMB": 100}'
 ```
 

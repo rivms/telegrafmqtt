@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+// import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "MqttProtobufConsole";
+
+message DeviceMessage {
+  string name = 1;
+  string reading = 2;
+  string timestamp = 3;
+  //google.protobuf.Timestamp timestamp = 3;
+  optional string message = 4;
+}

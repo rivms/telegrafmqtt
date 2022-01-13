@@ -1,0 +1,62 @@
+envFromSecret: "telegraf-adx"
+
+volumes:
+  - name: telegraf-proto
+    configMap:
+      name: telegraf-proto
+
+mountPoints:
+  - name: telegraf-proto
+    mountPath: /etc/telegraf/proto
+
+service:
+  enabled: false
+
+config:
+  agent:
+    interval: "10s"
+    round_interval: false
+    metric_batch_size: 2
+    metric_buffer_limit: 100
+    collection_jitter: "0s"
+    flush_interval: "15s"
+    flush_jitter: "0s"
+    precision: ""
+    debug: true
+    quiet: false
+  inputs:
+    - mqtt_consumer:      
+        topics:
+          - "proto_test"            
+        data_format: "xpath_protobuf"
+        xpath_protobuf_file: /etc/telegraf/proto/devicemessage.proto
+        xpath_protobuf_type: "DeviceMessage"
+        xpath_print_document: true
+        servers: 
+          - "tcp://mosquitto:1883"
+
+    - mqtt_consumer.xpath:
+        metric_name: "string('mqtt_consumer')"
+        fields:     
+              name: "string(/name)"
+              reading: "string(/reading)"
+              timestamp: "string(/timestamp)"
+              messages: "string(/message)"               
+        
+  outputs:
+    - azure_data_explorer:
+        endpoint_url: "<URI to Azure Data Explorer Cluster>" 
+        database: "telemetrydb"
+        timeout: "20s"
+        metrics_grouping_type: "TablePerMetric"
+# Optionally output to Event Hub
+#    - event_hubs:
+#        connection_string: "Endpoint=sb://telemetryevtns001.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=ZFu6VtoKydmqm2VGkDxftTL5CK2eAqKyYGs3ak07GoA=;EntityPath=mqttevthub001"
+#        data_format: "json"             
+
+  metrics:
+    health:
+      enabled: false
+    collect_memstats: false  
+    
+

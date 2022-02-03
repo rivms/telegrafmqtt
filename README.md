@@ -48,7 +48,15 @@ kubectl port-forward <podname> 1883:1883
 ```
 - Setup a connection to the broker. Annonymous authentication is used with a connection to the local port setup for port forwarding. Ensure that certificate validation and encryption are disabled. 
 !["MQTT Explorer Connection Setup"](assets/mqttexplorersetup.png)
-- Test messages can be sent to the broker to confirm functioning of the broker
+- Test messages can be sent to the broker to confirm functioning of the broker. Here a test json document is published to the ```test``` topic
+```
+{
+  "m": "Status #25",
+  "r": "32.1",
+  "t": "2022-02-03T05:46:032",
+  "n": "T123"
+}
+```
 ![Test Message](assets/mqtttestmessage.png)
 
 
